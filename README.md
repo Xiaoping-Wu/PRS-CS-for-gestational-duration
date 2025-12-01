@@ -1,5 +1,5 @@
-## Estimate polygenic score for gestational duration---------------------------
-## @Xiaoping WU
+## Estimate polygenic score for gestational duration
+## @Xiaoping Wu
 ## 2025-11-24
 
 
