@@ -6,11 +6,14 @@
 ## Data
 
 GWAS summary statistics: gestataional duration, European ancestry,Mother
+
 LD reference: 1000 Genomes Project phase 3 samples
+
 Targeted sample: gestataional duration, European ancestry, Child
 
 ## Code
 /mnt/scratch/xiaoping/GxE_parity_PRS-CS/workflow/Snakefile
+
 /mnt/scratch/xiaoping/GxE_parity_PRS-CS/workflow/scripts/*
 
 ## Results
@@ -25,6 +28,7 @@ Targeted sample: gestataional duration, European ancestry, Child
 
 #### variance
 mod0 <- lm(phe ~ mor_age + mor_age2 + PARITET_5 + KJONN + PC1 + PC2 + PC3 + PC4 + PC5, data=df)
+
 mod1 <- lm(phe ~ mor_age + mor_age2 + PARITET_5 + KJONN + PC1 + PC2 + PC3 + PC4 + PC5 + PRS_z, data=df)
 
 ΔR² = 0.1605 → adding the PRS to covariates explains ~16% more variance of the phenotype.
