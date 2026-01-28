@@ -14,20 +14,21 @@ parsed_opts <- list(
   
 )
 if (interactive()) {
-  opt <- list(gwas="data/gwas_EUR_Mother_GA.tsv.gz",
-              gwas_format="results/sumstats/gwas_EUR_Mother_GA.txt"
+  opt <- list(gwas="/mnt/scratch/karin/Parity_gd_bw_pw/results/work/GWAS/gd/regenie/step2/QC/mother/parity0.txt",
+              gwas_format="results/ALSPAC_PGS_mother_GD_{parity}/formated_sumstats.txt"
   )
 } else {
   opt <- parse_args(OptionParser(option_list = parsed_opts))
   
 }
 
-d= fread(opt$gwas) %>%
-  select(ID,ALLELE1,ALLELE0,BETA,SE)
-d$ALLELE1= toupper(d$ALLELE1)
-d$ALLELE0= toupper(d$ALLELE0)
-names(d)
-names(d)= c('SNP', 'A1', 'A2', 'BETA', 'SE')
+d= fread(opt$gwas,sep=",",select = c("ID", "BETA", "SE", "A1","A2")) %>%
+  mutate(SNP=ID) %>%
+  select(-ID) %>%
+  select(SNP,A1,A2,BETA,SE)
+
+d$A1= toupper(d$A1)
+d$A2= toupper(d$A2)
 
 print("any missing value")
 print(colSums(is.na(d)))

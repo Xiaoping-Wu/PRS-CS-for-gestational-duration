@@ -23,7 +23,7 @@ if (interactive()) {
 }
 
 # List of PRS-CS output files for each chromosome
-chr_files <- paste0(opt$PRS_chr,"/chr", 1:22, "-PGS.sscore")  # adjust names
+chr_files <- paste0(opt$PRS_chr,"/chr", 1:22, ".sscore")  # adjust names
 
 # Initialize empty list
 prs_list <- list()

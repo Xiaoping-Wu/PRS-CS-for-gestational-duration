@@ -1,4 +1,4 @@
-name: /mnt/scratch/xiaoping_conda/envs/Rbase
+name: Rbase
 channels:
   - conda-forge
 dependencies:

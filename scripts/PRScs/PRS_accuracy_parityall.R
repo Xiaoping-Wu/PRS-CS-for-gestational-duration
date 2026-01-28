@@ -24,10 +24,10 @@ parsed_opts <- list(
 
 
 if (interactive()) {
-  opt <- list(PRS="results/PGS_EUR_Mother_GA/PGS.txt",
-              phe="data/EUR_Child_GA_phe.tsv",
-              cov="data/EUR_Child_GA_cov.tsv",
-              quantile_plot="results/PGS_EUR_Mother_GA/quantile_plot.png"
+  opt <- list(PRS='results/PGS/gd_Mother_effectSNPnoInteraction_parityall/PGS.txt',
+              phe='results/replication/gd_Mother_parityall/phe.tsv',
+              cov='results/replication/gd_Mother_parityall/cov.tsv',
+              quantile_plot="results/PGS/gd_Mother_parityall/qplot.png"
   )
 } else {
   opt <- parse_args(OptionParser(option_list = parsed_opts))
@@ -44,16 +44,24 @@ df <- fread(opt$PRS) %>%
 
 df$PRS_z <- scale(df$PRS)
 
-# baseline model with covariates
-mod0 <- lm(phe ~ mor_age + mor_age2 + PARITET_5 + KJONN + PC1 + PC2 + PC3 + PC4 + PC5, data=df)
-mod1 <- lm(phe ~ mor_age + mor_age2 + PARITET_5 + KJONN + PC1 + PC2 + PC3 + PC4 + PC5 + PRS_z, data=df)
 
-summary(mod1)$coef["PRS_z",]         
+
+# baseline model with covariates
+mod0 <- lm(phe ~ maternal_age_at_delivery + sex_assigned_at_birth + PARITET + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10, data=df)
+mod1 <- lm(phe ~ maternal_age_at_delivery + sex_assigned_at_birth + PARITET + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10 + PRS_z, data=df)
+mod2 <- lm(phe ~ maternal_age_at_delivery + sex_assigned_at_birth + PARITET + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10 + PRS_z + PRS_z*PARITET, data=df)
+
+cat("Effect size per SD PRS:",summary(mod1)$coef["PRS_z",])
+
+cat("mod0: parity")
+cat("mod1: parity+PRS")
 r2_0 <- summary(mod0)$r.squared
 r2_1 <- summary(mod1)$r.squared
-delta_r2 <- r2_1 - r2_0
-cat("Incremental R2:", delta_r2, "\n")
-#	ΔR² = 0.1605 → adding the PRS to your covariates explains ~16% more variance of the phenotype.
+r2_2 <- summary(mod2)$r.squared
+
+cat("Incremental R2 from mod0 to mod1:",r2_1 - r2_0, "\n")
+cat("Incremental R2 from mod0 to mod2:", r2_2 - r2_0, "\n")
+cat("Incremental R2 from mod1 to mod2:", r2_2 - r2_1, "\n")
 
 
 ##=====================PRS quantile
@@ -71,9 +79,7 @@ get_quantile <- function(x, num.quant, quant.ref){
 }
 
 
-
-
-lr <- lm(phe ~ mor_age + mor_age2 + KJONN + PC1 + PC2 + PC3 + PC4 + PC5, data=df)
+lr <- lm(phe ~ maternal_age_at_delivery + sex_assigned_at_birth + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10, data=df)
 lr_res <- resid(lr)
 lr_res_zscore <- (lr_res-mean(lr_res))/sd(lr_res)
 df$lr_res_zscore <- lr_res_zscore
@@ -81,19 +87,19 @@ df$lr_res_zscore <- lr_res_zscore
 df$quantile_group <- get_quantile(df$PRS_z,num.quant=10, quant.ref=1)
 q975 <- qnorm(0.975)
 
-lr_case <- summary(lm(lr_res_zscore ~ -1 + quantile_group, data=subset(df, PARITET_5 == 1)))
-lr_ctl <- summary(lm(lr_res_zscore ~ -1 + quantile_group, data=subset(df, PARITET_5 == 0)))
+lr_case <- summary(lm(lr_res_zscore ~ -1 + quantile_group, data=subset(df, PARITET == 1)))
+lr_ctl <- summary(lm(lr_res_zscore ~ -1 + quantile_group, data=subset(df, PARITET == 0)))
 
 
 lr_case_m <- lr_case$coefficients[,1]
 lr_case_sd <- lr_case$coefficients[,2]
-lr_case_counts <- table(df[df[,PARITET_5]==1,"quantile_group"])
+lr_case_counts <- table(df[df[,PARITET]==1,"quantile_group"])
 clr_case <- cbind(c(1:10),lr_case_m,lr_case_m+q975*lr_case_sd,lr_case_m-q975*lr_case_sd,lr_case_counts,"Parity=1")
 colnames(clr_case) <- c("Quantile","Coef","CI.U","CI.L","N","sample")
 
 lr_ctl_m <- lr_ctl$coefficients[,1]
 lr_ctl_sd <- lr_ctl$coefficients[,2]
-lr_ctl_counts <- table(df[df[,PARITET_5]==0,"quantile_group"])
+lr_ctl_counts <- table(df[df[,PARITET]==0,"quantile_group"])
 clr_ctl <- cbind(c(1:10),lr_ctl_m,lr_ctl_m+q975*lr_ctl_sd,lr_ctl_m-q975*lr_ctl_sd,lr_ctl_counts,"Parity=0")
 colnames(clr_ctl) <- c("Quantile","Coef","CI.U","CI.L","N","sample")
 
@@ -115,5 +121,4 @@ myplot <- ggplot(effect,aes(x=Quantile,y=Coef,ymin=CI.L,ymax=CI.U,color=sample))
   theme(legend.title = element_blank())
 myplot
 ggsave(opt$quantile_plot,myplot,height=4,width=4)
-
 
