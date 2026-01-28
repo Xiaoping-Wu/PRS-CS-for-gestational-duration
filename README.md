@@ -32,7 +32,18 @@ target sample: ALSPAC cohorts
 
 /mnt/scratch/xiaoping/GxE_parity_PRS-CS/workflow/rules/PGS.smk
 
+### Output from regenie
+model0: No interaction	gd ~ SNP + parity
+model1: Interaction 	gd ~ SNP + parity + SNP*parity
 
+ADD-CONDTL  = same as model0  
+ADD_INT_SNP: SNP effect when PARITET = 0 (reference group)  
+ADD_INT_SNP*parity=1: Difference in SNP effect between parity 1 and parity 0  
+ANDD-INF_2DF: Is there any SNP effect in any parity group?  
+
+
+SNP effect in parity = 0: ADD-INT_SNP  
+SNP effect in parity = 1: ADD-INT_SNP + ADD_INT_SNP*parity=1  
 
 ## 2025-11-24 test for PRScs
 
